@@ -130,7 +130,7 @@ function zt_display_leaders() {
 				<li>
 					Infrequently updated data
 					<ul>
-						<li>menus <a href="http://hitchhackerguide.com/2011/10/07/caching-wordpress-navigation-menus-wp_nav_menu-wrapper/" target="_blank"><img src="images/link.png" /></a>, related posts, list of teams</li>
+						<li>menus <a href="http://hitchhackerguide.com/2011/10/07/caching-wordpress-navigation-menus-wp_nav_menu-wrapper/" target="_blank"><img src="images/link.png" /></a>, related posts, lists of data</li>
 					</ul>
 				</li>
 			</ul>
@@ -161,22 +161,22 @@ function zt_display_leaders() {
 
 			<p>Cache when the data is not cached</p>
 
-			<p class="code-caption">functions.php</p>
 			<pre>
-function zt_get_latest_tweet() {
-    $tweet = get_transient( 'zt-latest-tweet' );
-    if ( false === $favorites ) {
-        $tweet = zt_request_latest_tweet(); // Talk to Twitter
-        set_transient( 'zt-latest-tweet', $tweet, 300 );
+// functions.php
+function zt_get_tweet() {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+        $tweet = zt_request_tweet(); // Talk to Twitter
+        set_transient( 'zt-tweet', $tweet, 300 );
     }
     return $tweet;
-}</pre>
+}
 
-			<p class="code-caption">sidebar.php</p>
-			<pre>
+// sidebar.php
 &lt;h3&gt;Latest Tweet:&lt;/h3&gt;
-&lt;p&gt;&lt;?php echo zt_get_latest_tweet(); ?&gt;&lt;/p&gt;</pre>
+&lt;p&gt;&lt;?php echo zt_get_tweet(); ?&gt;&lt;/p&gt;</pre>
 
+			<p>We can do better than this</p>
+			
 		</article>
 
 		<article>
@@ -206,19 +206,19 @@ function zt_get_latest_tweet() {
 			<h3>When to Cache - When the Data Changes</h3>
 
 			<pre>
-function zt_set_best_reviewed_games( $new_status, $old_status, $post ) {
+function zt_set_best_games( $new_status, $old_status, $post ) {
     if ( 'zt-game' != $post->post_type )
         return false;
-    zt_determine_best_reviewed_games();
+    zt_determine_best_games();
 }
 
-function zt_determine_best_reviewed_games() {
+function zt_determine_best_games() {
     /* Get best reviewed games; set to $top_games */
     set_transient( 'zt-top-games', $top_games );
     return $top_games;
 }
 
-add_action( 'transition_post_status', 'zt_set_best_reviewed_games', 10, 3 );</pre>
+add_action( 'transition_post_status', 'zt_set_best_games', 10, 3 );</pre>
 		</article>
 
 		<article>
@@ -241,19 +241,18 @@ add_action( 'transition_post_status', 'zt_set_best_reviewed_games', 10, 3 );</pr
 			<h3>When to Cache - On an Interval</h3>
 
 			<pre>
-function zt_get_latest_tweet() {
-    $tweet = get_transient( 'zt-latest-tweet' );
-    if ( false === $favorites ) {
-        $tweet = zt_request_latest_tweet(); // Talk to Twitter
-        set_transient( 'zt-latest-tweet', $tweet );
+function zt_get_tweet() {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+        $tweet = zt_request_tweet(); // Talk to Twitter
+        set_transient( 'zt-tweet', $tweet );
     }
     return $tweet;
 }
 
 function zt_schedule_tweet_retrieval() {
-    if ( ! wp_next_scheduled( 'zt_latest_tweet_scheduled' ) )
-        wp_schedule_event( time(), 'hourly', 'zt_latest_tweet_scheduled' );
-    add_action( 'zt_latest_tweet_scheduled', 'zt_request_latest_tweet' );
+    if ( ! wp_next_scheduled( 'zt_tweet_sched' ) )
+        wp_schedule_event( time(), 'hourly', 'zt_tweet_sched' );
+    add_action( 'zt_tweet_sched', 'zt_request_tweet' );
 }
 add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 		</article>
@@ -267,8 +266,8 @@ add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 					Have a backup plan
 					<ul>
 						<li>Display placeholder text</li>
-						<li>Get from backup storage (Options API)</li>
 						<li>Regenerate data</li>
+						<li>Get from backup storage (Options API)</li>
 					</ul>
 				</li>
 			</ul>
@@ -278,21 +277,120 @@ add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 			<h3>When to Cache - Failing Gracefully</h3>
 
 			<pre>
-function zt_display_latest_tweet() {
-    $tweet = get_transient( 'zt-latest-tweet' );
-    if ( false === $tweet )
+function zt_display_tweet() {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
         return $tweet;
     else
         return 'Latest Tweet Unavailable';
 }</pre>
 			<pre>
-function zt_display_latest_tweet() {
-    $tweet = get_transient( 'zt-latest-tweet' );
-    if ( false === $tweet )
+function zt_display_tweet() {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
         return $tweet;
     else
-        return zt_get_latest_tweet();
+        return zt_get_tweet();
 }</pre>
+		</article>
+
+		<article>
+			<h3>When to Cache - Failing Gracefully</h3>
+
+			<pre>
+function zt_generate_tweet() {
+    $tweet = zt_request_tweet(); // Talk to Twitter
+    set_transient( 'zt-tweet', $tweet );
+
+    if ( get_option( 'zt-tweet' ) )
+        add_option( 'zt-tweet', $tweet, '', 'no' );
+    else
+        update_option( 'zt-tweet', $tweet );
+
+    return $tweet;
+}
+function zt_schedule_tweet_retrieval() {
+    if ( ! wp_next_scheduled( 'zt_tweet_sched' ) )
+        wp_schedule_event( time(), 'hourly', 'zt_tweet_sched' );
+    add_action( 'zt_tweet_sched', 'zt_request_tweet' );
+}
+add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
+
+		</article>
+
+		<article>
+			<h3>When to Cache - Failing Gracefully</h3>
+
+			<pre>
+function zt_display_tweet() {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+        return $tweet;
+    } elseif ( $tweet = get_option( 'zt-tweet' ) {
+        set_transient( 'zt-tweet', $tweet, 300 );
+        return $tweet;
+    } else {
+        return zt_generate_tweet();
+    }
+}</pre>
+		</article>
+
+		<article>
+			<h3>When to Cache - Avoid Front End Caching</h3>
+
+			<!-- @todo: need a few more things here -->
+			<ul>
+				<li>Flooding</li>
+				<li></li>
+			</ul>
+
+		</article>
+
+		<article>
+			<h3>Beer List</h3>
+
+			<pre>
+function zt_generate_beer_list() {
+    // Query API and generate HTML
+    $beer_list = zt_get_beer_list();
+    set_transient( 'zt-beers', $beer_list );
+    return $beer_list;
+}
+
+function zt_schedule_generate_beer() {
+    if ( ! wp_next_scheduled( 'zt_beer_sched' ) )
+        wp_schedule_event( time(), 'daily', 'zt_beer_sched' );
+    add_action( 'zt_beer_sched', 'zt_generate_beer_list' );
+}
+add_action( 'init', 'zt_schedule_generate_beer' );</pre>
+
+		</article>
+
+		<article>
+			<h3>Beer List</h3>
+
+			<pre>
+function zt_generate_beer_on_publish( $post_id, $post ) {
+    zt_generate_beer_list();
+}
+add_action( 'publish_post', 'zt_generate_beer_on_publish', 10, 2 );
+
+function zt_display_all_the_beers() {
+    if ( false === ( $beers = get_transient( 'zt-beers' ) ) {
+        return $beers;
+    } else {
+        if ( ! get_transient( 'zt-beer-sched-single' ) ) {
+            $time = time() + 300;
+		    wp_schedule_single_event( $time, 'zt_beer_sched' );
+            set_transient( 'zt-beer-sched-single', 'yes' );
+        }
+        return 'Beer list unavaible.';
+    }
+}</pre>
+
+		</article>
+	
+		<article>
+			<h3>Thank You</h3>
+			
+			<p></p>
 		</article>
 
 	</section>
