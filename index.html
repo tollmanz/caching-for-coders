@@ -71,14 +71,14 @@
 			</ul>
 
 			<pre>
-function zt_display_scoring_leaders() {
-    $scoring_leaders = get_transient( 'zt-scoring-leaders' );
-    if ( false === $scoring_leaders ) {
-        $scoring_leaders = zt_get_scoring_leaders();
-        set_transient( 'zt-scoring-leaders', $scoring_leaders, 300 );
+function zt_display_leaders() {
+    $leaders = get_transient( 'zt-leaders' );
+    if ( false === $leaders ) {
+        $leaders = zt_get_leaders();
+        set_transient( 'zt-leaders', $leaders, 300 );
     }
 
-    return $scoring_leaders;
+    return $leaders;
 }</pre>
 
 		</article>
@@ -94,14 +94,14 @@ function zt_display_scoring_leaders() {
 			</ul>
 
 			<pre>
-function zt_display_scoring_leaders() {
-    $scoring_leaders = wp_cache_get( 'zt-scoring-leaders', 'zt-stats' );
-    if ( false === $scoring_leaders ) {
-        $scoring_leaders = zt_get_scoring_leaders();
-        wp_cache_set( 'zt-scoring-leaders', $scoring_leaders, 'zt-stats', 300 );
+function zt_display_leaders() {
+    $leaders = wp_cache_get( 'zt-leaders', 'zt-stats' );
+    if ( false === $leaders ) {
+        $leaders = zt_get_leaders();
+        wp_cache_set( 'zt-leaders', $leaders, 'zt-stats', 300 );
     }
 
-    return $scoring_leaders;
+    return $leaders;
 }</pre>
 		</article>
 
