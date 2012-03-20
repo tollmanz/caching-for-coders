@@ -10,7 +10,6 @@
  URL: http://code.google.com/p/html5slides/
  */
 
-// var PERMANENT_URL_PREFIX = 'http://html5slides.googlecode.com/svn/trunk/';
 var PERMANENT_URL_PREFIX = '';
 
 var SLIDE_CLASSES = ['far-past', 'past', 'current', 'next', 'far-next'];
@@ -20,7 +19,7 @@ var PM_TOUCH_SENSITIVITY = 15;
 var curSlide;
 
 /* ---------------------------------------------------------------------- */
-/* classList polyfill by Eli Grey
+/* classList polyfill by Eli Grey 
  * (http://purl.eligrey.com/github/classList.js/blob/master/classList.js) */
 
 if (typeof document !== "undefined" && !("classList" in document.createElement("a"))) {
