@@ -547,7 +547,7 @@ function addFontStyle() {
 	el.rel = 'stylesheet';
 	el.type = 'text/css';
 	el.href = 'http://fonts.googleapis.com/css?family=' +
-		'Rokkitt:400,700|Lato:300,300italic,700,700italic';
+		'Oswald:400,700|Open+Sans:300,300italic,700,700italic';
 
 	document.body.appendChild(el);
 };
