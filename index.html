@@ -130,7 +130,7 @@ function zt_display_leaders() {
 			<p>WP_Object_Cache <a href="http://codex.wordpress.org/Class_Reference/WP_Object_Cache" target="_blank"><img src="images/link.png" /></a></p>
 
 			<ul>
-				<li>wp_cache_set, wp_cache_get, wp_cache_delete (amongst others)</li>
+				<li>wp_cache_add, wp_cache_get, wp_cache_delete (amongst others)</li>
 				<li>Success depends on server environment</li>
 			</ul>
 
@@ -161,7 +161,7 @@ function zt_display_leaders() {
 				<li>
 					Expensive queries
 					<ul>
-						<li>'post__not_in', 'tax_query'</li>
+						<li>'post__not_in', 'meta_query', 'tax_query'</li>
 						<li>Identify slow queries with Debug Bar/Extender</li>
 					</ul>
 				</li>
@@ -235,7 +235,7 @@ function zt_get_tweet() {
 				<li>
 					Helpful Events/Hooks
 					<ul>
-						<li>Publishing posts: publish_post</li>
+						<li>Publishing/Updating posts: publish_post</li>
 						<li>Changing post status: transition_post_status</li>
 						<li>Creating terms: created_{$taxonomy}</li>
 						<li>Updating terms: edited_{$taxonomy}</li>
