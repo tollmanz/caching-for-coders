@@ -206,7 +206,7 @@ function zt_display_leaders() {
 			<pre>
 // functions.php
 function zt_get_tweet() {
-    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) ) {
         $tweet = zt_request_tweet(); // Talk to Twitter
         set_transient( 'zt-tweet', $tweet, 300 );
     }
@@ -285,7 +285,7 @@ add_action( 'transition_post_status', 'zt_set_best_games', 10, 3 );</pre>
 
 			<pre>
 function zt_get_tweet() {
-    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) ) {
         $tweet = zt_request_tweet(); // Talk to Twitter
         set_transient( 'zt-tweet', $tweet );
     }
@@ -324,7 +324,7 @@ add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 			
 			<pre>
 function zt_display_tweet() {
-    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( $tweet = get_transient( 'zt-tweet' ) ) {
         return $tweet;
     else
         return 'Latest Tweet Unavailable';
@@ -333,10 +333,10 @@ function zt_display_tweet() {
 			
 			<pre>
 function zt_display_tweet() {
-    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( $tweet = get_transient( 'zt-tweet' ) ) {
         return $tweet;
     else
-        return zt_get_tweet();
+        return zt_get_tweet(); // Talk to Twitter
 }</pre>
 		</article>
 
