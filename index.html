@@ -117,7 +117,7 @@ function zt_display_leaders() {
 		<article>
 			<h3>How to Cache</h3>
 
-			<p>WP_Object_Cache</p>
+			<p>WP_Object_Cache<a href="http://codex.wordpress.org/Class_Reference/WP_Object_Cache" target="_blank"><img src="images/link.png" /></a></p>
 
 			<ul>
 				<li>wp_cache_set, wp_cache_get, wp_cache_delete (amongst others)</li>
@@ -149,13 +149,13 @@ function zt_display_leaders() {
 					Expensive queries
 					<ul>
 						<li>'post__not_in', 'tax_query'</li>
-						<li>Identify slow queries with Debug Bar</li>
+						<li>Identify slow queries with Debug Bar/Extender</li>
 					</ul>
 				</li>
 				<li>
 					Repeated routines/queries
 					<ul>
-						<li>first image in post</li><!-- todo: better examples -->
+						<li>First image in post, dealing with child taxonomy terms</li><!-- todo: better examples -->
 					</ul>
 				</li>
 				<li>
@@ -176,7 +176,7 @@ function zt_display_leaders() {
 				<li>How can you remove queries or expensive processes?</li>
 			</ul>
 
-			<h3 class="second-header">Gameplan</h3>
+			<h3 class="second-header" style="margin-top:40px;">Gameplan</h3>
 
 			<ul>
 				<li>Only run intensive processes when absolutely necessary</li>
@@ -184,8 +184,6 @@ function zt_display_leaders() {
 				<li>Design to fail gracefully</li>
 			</ul>
 		</article>
-
-		<!-- todo: it might good to first show the "common" pattern to then show what we can do to make this better. -->
 
 		<article>
 			<h3>When to Cache - A Common Solution</h3>
@@ -206,7 +204,7 @@ function zt_get_tweet() {
 &lt;h3&gt;Latest Tweet:&lt;/h3&gt;
 &lt;p&gt;&lt;?php echo zt_get_tweet(); ?&gt;&lt;/p&gt;</pre>
 
-			<p>We can do better than this</p>
+			<p style="margin-top:35px;"><em>We can do better than this</em></p>
 			
 		</article>
 
@@ -217,7 +215,7 @@ function zt_get_tweet() {
 				<li>
 					Generate the data on an admin event
 					<ul>
-						<li>Only generates the data once</li>
+						<li>Generates data only when changed</li>
 						<li>Reduces the chance of front end generation</li>
 					</ul>
 				</li>
@@ -240,6 +238,7 @@ function zt_get_tweet() {
 function zt_set_best_games( $new_status, $old_status, $post ) {
     if ( 'zt-game' != $post->post_type )
         return false;
+
     zt_determine_best_games();
 }
 
@@ -285,6 +284,7 @@ function zt_schedule_tweet_retrieval() {
         wp_schedule_event( time(), 'hourly', 'zt_tweet_sched' );
     add_action( 'zt_tweet_sched', 'zt_request_tweet' );
 }
+
 add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 		</article>
 
@@ -307,6 +307,8 @@ add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 		<article>
 			<h3>When to Cache - Failing Gracefully</h3>
 
+			<p>Placeholder text</p>
+			
 			<pre>
 function zt_display_tweet() {
     if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
@@ -314,6 +316,8 @@ function zt_display_tweet() {
     else
         return 'Latest Tweet Unavailable';
 }</pre>
+			<p>Regenerate data</p>
+			
 			<pre>
 function zt_display_tweet() {
     if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
@@ -326,23 +330,27 @@ function zt_display_tweet() {
 		<article>
 			<h3>When to Cache - Failing Gracefully</h3>
 
+			<p>Storing a "backup"</p>
+
 			<pre>
 function zt_generate_tweet() {
     $tweet = zt_request_tweet(); // Talk to Twitter
     set_transient( 'zt-tweet', $tweet );
 
-    if ( get_option( 'zt-tweet' ) )
+    if ( ! get_option( 'zt-tweet' ) )
         add_option( 'zt-tweet', $tweet, '', 'no' );
     else
         update_option( 'zt-tweet', $tweet );
 
     return $tweet;
 }
+
 function zt_schedule_tweet_retrieval() {
     if ( ! wp_next_scheduled( 'zt_tweet_sched' ) )
         wp_schedule_event( time(), 'hourly', 'zt_tweet_sched' );
     add_action( 'zt_tweet_sched', 'zt_request_tweet' );
 }
+				
 add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 
 		</article>
@@ -350,12 +358,14 @@ add_action( 'init', 'zt_schedule_tweet_retrieval' );</pre>
 		<article>
 			<h3>When to Cache - Failing Gracefully</h3>
 
+			<p>Using the "backup"</p>
+
 			<pre>
 function zt_display_tweet() {
-    if ( false === ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( false !== ( $tweet = get_transient( 'zt-tweet' ) ) {
         return $tweet;
     } elseif ( $tweet = get_option( 'zt-tweet' ) {
-        set_transient( 'zt-tweet', $tweet, 300 );
+        set_transient( 'zt-tweet', $tweet );
         return $tweet;
     } else {
         return zt_generate_tweet();
@@ -366,10 +376,18 @@ function zt_display_tweet() {
 		<article>
 			<h3>When to Cache - Avoid Front End Caching</h3>
 
-			<!-- @todo: need a few more things here -->
 			<ul>
-				<li>Flooding</li>
-				<li></li>
+				<li>Flooding
+					<ul>
+						<li>Many concurrent users cause overload</li>
+					</ul>
+				</li>
+				<li>Consider "locking" techniques if generating on front end</li>
+				<li>
+					<a href="https://github.com/markjaquith/WP-TLC-Transients" title="TLC Transients" target="_blank">
+						Mark Jaquith's WP-TLC-Transients
+					</a>
+				</li>
 			</ul>
 
 		</article>
@@ -382,6 +400,7 @@ function zt_generate_beer_list() {
     // Query API and generate HTML
     $beer_list = zt_get_beer_list();
     set_transient( 'zt-beers', $beer_list );
+    delete_transient( 'zt-beer-sched-single' );
     return $beer_list;
 }
 
@@ -390,7 +409,12 @@ function zt_schedule_generate_beer() {
         wp_schedule_event( time(), 'daily', 'zt_beer_sched' );
     add_action( 'zt_beer_sched', 'zt_generate_beer_list' );
 }
-add_action( 'init', 'zt_schedule_generate_beer' );</pre>
+add_action( 'init', 'zt_schedule_generate_beer' );
+
+function zt_generate_beer_on_publish( $post_id, $post ) {
+    zt_generate_beer_list();
+}
+add_action( 'publish_post', 'zt_generate_beer_on_publish', 10, 2 );</pre>
 
 		</article>
 
@@ -398,19 +422,23 @@ add_action( 'init', 'zt_schedule_generate_beer' );</pre>
 			<h3>Beer List</h3>
 
 			<pre>
-function zt_generate_beer_on_publish( $post_id, $post ) {
-    zt_generate_beer_list();
+// Same function from previous slide
+function zt_generate_beer_list() {
+    // Query API and generate HTML
+    $beer_list = zt_get_beer_list();
+    set_transient( 'zt-beers', $beer_list );
+    delete_transient( 'zt-beer-sched-single' );
+    return $beer_list;
 }
-add_action( 'publish_post', 'zt_generate_beer_on_publish', 10, 2 );
 
 function zt_display_all_the_beers() {
-    if ( false === ( $beers = get_transient( 'zt-beers' ) ) {
+    if ( false !== ( $beers = get_transient( 'zt-beers' ) ) {
         return $beers;
     } else {
         if ( ! get_transient( 'zt-beer-sched-single' ) ) {
-            $time = time() + 300;
-		    wp_schedule_single_event( $time, 'zt_beer_sched' );
             set_transient( 'zt-beer-sched-single', 'yes' );
+            $time = time() + 300;
+            wp_schedule_single_event( $time, 'zt_beer_sched' );
         }
         return 'Beer list unavaible.';
     }
@@ -421,7 +449,9 @@ function zt_display_all_the_beers() {
 		<article>
 			<h3>Thank You</h3>
 			
-			<p></p>
+			<p>Daniel Bachhuber (@danielbachhuber)</p>
+			<p>Helen Hou-Sandi (@helenhousandi)</p>
+			
 		</article>
 
 	</section>
