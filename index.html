@@ -313,7 +313,7 @@ function zt_get_tweet() {
 			
 			<pre>
 function zt_display_tweet() {
-    if ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( $tweet = get_transient( 'zt-tweet' ) )
         return $tweet;
     else
         return 'Latest Tweet Unavailable';
@@ -322,7 +322,7 @@ function zt_display_tweet() {
 			
 			<pre>
 function zt_display_tweet() {
-    if ( $tweet = get_transient( 'zt-tweet' ) ) {
+    if ( $tweet = get_transient( 'zt-tweet' ) )
         return $tweet;
     else
         return zt_get_tweet(); // Talk to Twitter
